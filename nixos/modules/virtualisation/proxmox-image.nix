@@ -207,11 +207,17 @@ with lib;
         });
       in
       ''
-        ${vma}/bin/vma create "vzdump-qemu-${cfg.filenameSuffix}.vma" \
+        echo diskImage = $diskImage
+        [ ! -f "$out/vzdump-qemu-${cfg.filenameSuffix}.vma" ] || rm "$out/vzdump-qemu-${cfg.filenameSuffix}.vma"
+        ls -l $diskImage
+
+        ${vma}/bin/vma create "$out/vzdump-qemu-${cfg.filenameSuffix}.vma" \
           -c ${cfgFile "qemu-server.conf" (cfg.qemuConf // cfg.qemuExtraConf)}/qemu-server.conf drive-virtio0=$diskImage
+        ${vma}/bin/vma list "$out/vzdump-qemu-${cfg.filenameSuffix}.vma"
+
         rm $diskImage
-        ${pkgs.zstd}/bin/zstd "vzdump-qemu-${cfg.filenameSuffix}.vma"
-        mv "vzdump-qemu-${cfg.filenameSuffix}.vma.zst" $out/
+        ${pkgs.zstd}/bin/zstd "$out/vzdump-qemu-${cfg.filenameSuffix}.vma"
+        rm "$out/vzdump-qemu-${cfg.filenameSuffix}.vma"
 
         mkdir -p $out/nix-support
         echo "file vma $out/vzdump-qemu-${cfg.filenameSuffix}.vma.zst" >> $out/nix-support/hydra-build-products
